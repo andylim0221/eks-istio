@@ -1,0 +1,29 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: devops-test-cluster
+  region: ap-southeast-1
+
+nodeGroups:
+  - name: spot-group
+    desiredCapacity: 2
+    maxSize: 5
+    minSize: 2
+    instancesDistribution: #spot self-managed node group configuration
+      instanceTypes: ["t3.medium", "t3a.medium", "t3.large"]
+      onDemandPercentageAboveBaseCapacity: 0
+      capacityRebalance: true
+      spotAllocationStrategy: "price-capacity-optimized"
+    tags:
+      k8s.io/cluster-autoscaler/enabled: "true"
+      k8s.io/cluster-autoscaler/devops-test-cluster: "owned"
+
+iam:
+  withOIDC: true
+  serviceAccounts:
+    - metadata:
+        name: aws-load-balancer-controller
+        namespace: kube-system
+      wellKnownPolicies:
+        awsLoadBalancerController: true
